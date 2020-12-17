@@ -115,4 +115,21 @@ export = () => {
 
 		expect(Emitter.listenerCount("test")).to.be.equal(0);
 	});
+
+	itSKIP("should work after error in callback", () => {
+		const Emitter = new BindableEmitter<TestEvents>();
+		const spy = new Spy();
+
+		const cb = () => {
+			error("oh no");
+		};
+
+		Emitter.on("test", cb);
+		Emitter.on("test", () => spy.value());
+
+		Emitter.emit("test");
+		Emitter.emit("test");
+
+		expect(spy.callCount).to.be.equal(2);
+	});
 };

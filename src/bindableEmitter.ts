@@ -13,38 +13,18 @@ interface IEventBus<Events extends Record<EventKey<Events>, Callback>> {
 }
 
 export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = never> implements IEventBus<Events> {
-	private static amount: number;
-	private static mainFolder: Folder;
-
 	private events: Map<EventKey<Events>, BindableEvent>;
 	private connections: Map<EventKey<Events>, Map<Callback, RBXScriptConnection>>;
-	private folder: Folder;
 
-	constructor(folderName?: string) {
-		EventEmitter.amount ||= 0;
-		EventEmitter.amount++;
-
-		if (!EventEmitter.mainFolder) {
-			EventEmitter.mainFolder = new Instance("Folder");
-			EventEmitter.mainFolder.Name = "EventEmitter";
-			EventEmitter.mainFolder.Parent = game.GetService("RunService").IsServer()
-				? game.GetService("ServerStorage")
-				: game.GetService("ReplicatedStorage");
-		}
-
+	constructor() {
 		this.events = new Map();
 		this.connections = new Map();
-
-		this.folder = new Instance("Folder");
-		//eslint-disable-next-line
-		this.folder.Name = folderName || `EventEmitter (${EventEmitter.amount})`;
-		this.folder.Parent = EventEmitter.mainFolder;
 	}
 
 	private getEvent<E extends EventKey<Events>>(event: E): BindableEvent {
 		if (!this.events.has(event)) {
 			const bindable = new Instance("BindableEvent");
-			bindable.Name = typeIs(event, "string") ? event : "Symbol-named event";
+			//bindable.Name = typeIs(event, "string") ? event : "Symbol-named event";
 			this.events.set(event, bindable);
 		}
 		return this.events.get(event)!;

@@ -55,7 +55,13 @@ export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = ne
 
 	emit<E extends EventKey<Events>>(eventName: E, ...args: Parameters<Events[E]>): this {
 		for (const callback of this.getEvent(eventName)) {
-			coroutine.wrap(callback)(...(args as unknown[]));
+			coroutine.wrap((args: unknown[]) => {
+				//opcall doesn't work with spread at the time of writing :(
+				const [success, message] = pcall(callback, ...args);
+				if (!success) {
+					warn(`EventEmitter callback for event "${eventName}" errored! Error trace:\n${message}`);
+				}
+			})(args as unknown[]);
 		}
 		return this;
 	}
