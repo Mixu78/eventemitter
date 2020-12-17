@@ -12,7 +12,7 @@ First make an interface with ```eventName: listenerFunction``` pairs, for exampl
 ```ts
 interface GameEvents {
 	playerGotItem: (player: Player, item: Item) => void;
-	playerDied: (player: Player, item: Item) => void;
+	playerDied: (player: Player) => void;
 }
 ```
 Then create the emitter like so:
