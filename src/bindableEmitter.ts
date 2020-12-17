@@ -30,47 +30,79 @@ export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = ne
 		return this.events.get(event)!;
 	}
 
-	on<E extends EventKey<Events>>(eventName: E, callback: Events[E]): this {
+	/**
+	 * Binds a listener function to an event.
+	 *
+	 * @param eventName Name of event to bind to
+	 * @param listener Function to bind to event
+	 */
+	on<E extends EventKey<Events>>(eventName: E, listener: Events[E]): this {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
 		const event = this.getEvent(eventName);
 
-		const conn = event.Event.Connect(callback);
-		this.connections.get(eventName)!.set(callback, conn);
+		if (this.connections.get(eventName)!.has(listener)) throw "Listeners may not be registered twice!";
+
+		const conn = event.Event.Connect(listener);
+		this.connections.get(eventName)!.set(listener, conn);
 
 		return this;
 	}
 
-	once<E extends EventKey<Events>>(eventName: E, callback: Events[E]): this {
+	/**
+	 * Binds a listener function to an event, and disconnects it after the event was fired.
+	 *
+	 * @param eventName Name of event to bind to
+	 * @param listener Function to bind to event
+	 */
+	once<E extends EventKey<Events>>(eventName: E, listener: Events[E]): this {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
 		const event = this.getEvent(eventName);
+
+		if (this.connections.get(eventName)!.has(listener)) throw "Listeners may not be registered twice!";
 
 		const conn = event.Event.Connect((...args: unknown[]) => {
-			callback(...args);
 			conn.Disconnect();
-			this.connections.get(eventName)!.delete(callback);
+			this.connections.get(eventName)!.delete(listener);
+			listener(...args);
 		});
-		if (conn.Connected) this.connections.get(eventName)!.set(callback, conn);
+		if (conn.Connected) this.connections.get(eventName)!.set(listener, conn);
 
 		return this;
 	}
 
-	off<E extends EventKey<Events>>(eventName: E, callback: Events[E]): this {
+	/**
+	 * Unbinds a listener function from an event.
+	 *
+	 * @param eventName Name of event to unbind from
+	 * @param listener Function to unbind
+	 */
+	off<E extends EventKey<Events>>(eventName: E, listener: Events[E]): this {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
-		const conn = this.connections.get(eventName)!.get(callback);
+		const conn = this.connections.get(eventName)!.get(listener);
+
 		if (conn) {
 			conn.Disconnect();
-			this.connections.get(eventName)!.delete(callback);
+			this.connections.get(eventName)!.delete(listener);
 		}
 
 		return this;
 	}
 
+	/**
+	 * Emits to the specified event with the arguments passed.
+	 *
+	 * @param eventName Name of event to emit to
+	 * @param args Event arguments
+	 */
 	emit<E extends EventKey<Events>>(eventName: E, ...args: Parameters<Events[E]>): this {
 		this.getEvent(eventName).Fire(...(args as unknown[]));
 
 		return this;
 	}
 
+	/**
+	 * Returns an array of all event names used so far.
+	 */
 	eventNames(): EventKey<Events>[] {
 		const keys: EventKey<Events>[] = [];
 		this.events.forEach((_, key) => keys.push(key));
@@ -78,6 +110,11 @@ export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = ne
 		return keys;
 	}
 
+	/**
+	 * Returns an array of all current listener functions for an event.
+	 *
+	 * @param eventName Name of event to get listeners for
+	 */
 	listeners<E extends EventKey<Events>>(eventName: E): Function[] {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
 
@@ -87,6 +124,11 @@ export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = ne
 		return listeners;
 	}
 
+	/**
+	 * Returns the amount of listeners currently connected to an event.
+	 *
+	 * @param eventName Name of event to get listener count for
+	 */
 	listenerCount<E extends EventKey<Events>>(eventName: E): number {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
 
@@ -96,6 +138,11 @@ export class EventEmitter<Events extends Record<EventKey<Events>, Callback> = ne
 		return amount;
 	}
 
+	/**
+	 * Removes all listeners from an event.
+	 *
+	 * @param eventName Name of event to remove listeners from
+	 */
 	removeAllListeners<E extends EventKey<Events>>(eventName: E): this {
 		if (!this.connections.has(eventName)) this.connections.set(eventName, new Map());
 

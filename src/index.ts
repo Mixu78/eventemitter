@@ -1,5 +1,2 @@
-import { EventEmitter as BindableEmitter } from "bindableEmitter";
-import { EventEmitter as LuaEmitter } from "luaEmitter";
-
-export { BindableEmitter, LuaEmitter };
-export default LuaEmitter;
+import { EventEmitter } from "bindableEmitter";
+export = EventEmitter;

@@ -1,6 +1,6 @@
 /// <reference types="@rbxts/testez/globals"/>
 
-import { BindableEmitter } from "..";
+import BindableEmitter from "..";
 import Spy from "./spy";
 
 interface TestEvents {
@@ -116,20 +116,13 @@ export = () => {
 		expect(Emitter.listenerCount("test")).to.be.equal(0);
 	});
 
-	itSKIP("should work after error in callback", () => {
+	it("should throw when trying to bind the same listener twice", () => {
 		const Emitter = new BindableEmitter<TestEvents>();
-		const spy = new Spy();
-
-		const cb = () => {
-			error("oh no");
-		};
+		const cb = () => {};
 
 		Emitter.on("test", cb);
-		Emitter.on("test", () => spy.value());
 
-		Emitter.emit("test");
-		Emitter.emit("test");
-
-		expect(spy.callCount).to.be.equal(2);
+		expect(() => Emitter.on("test", cb)).to.throw();
+		expect(() => Emitter.once("test", cb)).to.throw();
 	});
 };
