@@ -1,20 +1,29 @@
 {
   "name": "@rbxts/eventemitter",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js-like EventEmitter classes, one using coroutines for speed and one using BindableEvents for easy error logging.",
   "main": "out/init.lua",
   "scripts": {
-    "prepublishOnly": "rbxtsc"
+    "prepublishOnly": "del /f /q \".\\out\" && rbxtsc --type package",
+    "test-setup": "del /f /q \".\\out\" && rbxtsc --type game && rojo build -o Tests.rbxlx",
+    "test": "npm run test-setup && run-in-roblox --place ./Tests.rbxlx --script ./out/testRunner.server.lua"
   },
   "keywords": [],
-  "author": "",
+  "author": "Mixu_78",
   "license": "ISC",
   "publishConfig": {
     "access": "public"
   },
   "types": "out/index.d.ts",
+  "files": [
+    "out/*Emitter.lua",
+    "out/*Emitter.d.ts",
+    "out/init.lua",
+    "out/index.d.ts"
+  ],
   "devDependencies": {
     "@rbxts/compiler-types": "^1.0.0-beta.6.2",
+    "@rbxts/fitumi": "^1.0.4",
     "@rbxts/testez": "^0.3.1-ts.6",
     "@rbxts/types": "^1.0.428",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
